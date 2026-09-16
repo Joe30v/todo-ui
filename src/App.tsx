@@ -6,11 +6,34 @@ interface Todo {
   completed: boolean;
 }
 
-function TodoItem({ todo }: { todo: Todo }) {
+interface TodoItemProps {
+  todo: Todo;
+  onToggle: (todo: Todo) => void;
+  onDelete: (id: number) => void;
+}
+
+function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   return (
-    <li>
-      <input type="checkbox" checked={todo.completed} readOnly />
-      <span>{todo.title}</span>
+    <li style={{ marginBottom: "10px" }}>
+      <input
+        type="checkbox"
+        checked={todo.completed}
+        onChange={() => onToggle(todo)}
+      />
+      <span
+        style={{
+          marginLeft: "10px",
+          textDecoration: todo.completed ? "line-through" : "none"
+        }}
+      >
+        {todo.title}
+      </span>
+      <button
+        onClick={() => onDelete(todo.id)}
+        style={{ marginLeft: "10px" }}
+      >
+        Delete
+      </button>
     </li>
   );
 }
@@ -62,6 +85,40 @@ function App() {
     }
   }
 
+  async function toggleCompleted(todo: Todo) {
+    try {
+      const response = await fetch(`http://localhost:3000/todos/${todo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !todo.completed })
+      });
+
+      if (!response.ok) throw new Error("Failed to update");
+      const updatedTodo = await response.json();
+      setTodos(currentTodos => currentTodos.map(currentTodo =>
+        currentTodo.id === updatedTodo.id ? updatedTodo : currentTodo
+      ));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update todo");
+    }
+  }
+
+ async function deleteTodo(id: number) {
+  try {
+    const response = await fetch(`http://localhost:3000/todos/${id}`, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) throw new Error("Failed to delete");
+    
+    setTodos(currentTodos => currentTodos.filter(todo => todo.id !== id));
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete todo");
+  }
+}
+
   if (loading) return <div><p>Loading...</p></div>;
   if (error) return <div><p>Error: {error}</p></div>;
 
@@ -81,7 +138,12 @@ function App() {
 
       <ul>
         {todos.map(todo => (
-          <TodoItem key={todo.id} todo={todo} />
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            onToggle={toggleCompleted}
+            onDelete={deleteTodo}
+          />
         ))}
       </ul>
     </div>
