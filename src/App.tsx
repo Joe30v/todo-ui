@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import{ TodoItem } from './components/TodoItem';
 
 interface Todo {
   id: number;
@@ -6,37 +7,6 @@ interface Todo {
   completed: boolean;
 }
 
-interface TodoItemProps {
-  todo: Todo;
-  onToggle: (todo: Todo) => void;
-  onDelete: (id: number) => void;
-}
-
-function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
-  return (
-    <li style={{ marginBottom: "10px" }}>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => onToggle(todo)}
-      />
-      <span
-        style={{
-          marginLeft: "10px",
-          textDecoration: todo.completed ? "line-through" : "none"
-        }}
-      >
-        {todo.title}
-      </span>
-      <button
-        onClick={() => onDelete(todo.id)}
-        style={{ marginLeft: "10px" }}
-      >
-        Delete
-      </button>
-    </li>
-  );
-}
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -50,9 +20,9 @@ function App() {
       try {
         setLoading(true);
         const response = await fetch("http://localhost:3000/todos");
-        if (!response.ok) throw new Error("Failed to fetch todos");  // if fail throw to an error handeling 
-        const data = await response.json();
-        setTodos(data);
+        if (!response.ok) throw new Error("Failed to fetch todos");
+        const loadedTodos: Todo[] = await response.json();
+        setTodos(loadedTodos);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -65,7 +35,7 @@ function App() {
 
   // Add todo via API
   async function addTodo() {
-    if (!input.trim()) return;// prevent adding empty todos
+    if (!input.trim()) return; // prevent adding empty todos
 
     try {
       const response = await fetch("http://localhost:3000/todos", {
@@ -77,7 +47,7 @@ function App() {
       if (!response.ok) throw new Error("Failed to create todo");
       
       const newTodo = await response.json();
-      setTodos([...todos, newTodo]);
+      setTodos(currentTodos => [...currentTodos, newTodo]);
       setInput("");
     } catch (err) {
       console.error(err);
@@ -104,20 +74,20 @@ function App() {
     }
   }
 
- async function deleteTodo(id: number) {
-  try {
-    const response = await fetch(`http://localhost:3000/todos/${id}`, {
-      method: "DELETE"
-    });
+  async function deleteTodo(id: number) {
+    try {
+      const response = await fetch(`http://localhost:3000/todos/${id}`, {
+        method: "DELETE"
+      });
 
-    if (!response.ok) throw new Error("Failed to delete");
-    
-    setTodos(currentTodos => currentTodos.filter(todo => todo.id !== id));
-  } catch (error) {
-    console.error(error);
-    alert("Failed to delete todo");
+      if (!response.ok) throw new Error("Failed to delete");
+
+      setTodos(currentTodos => currentTodos.filter(todo => todo.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete todo");
+    }
   }
-}
 
   if (loading) return <div><p>Loading...</p></div>;
   if (error) return <div><p>Error: {error}</p></div>;
