@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import TodoItem, { type Todo } from './components/TodoItem';
-
+ import  { Navigate, Route, Routes } from 'react-router-dom';
+ import TodoPage from './pages/TodoPage';
+ import LoginPage from './pages/LoginPage';
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -12,9 +14,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const activeCount = todos.filter(todo => !todo.completed).length;
   const doneCount = todos.filter(todo => todo.completed).length;
-  
-
-
+  const [ token, setToken] = useState<string | null>(localStorage.getItem("token"));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -27,6 +27,20 @@ function App() {
       setInputError(null);
     }
   };
+
+
+   useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    setToken(savedToken);
+    setLoading(false);
+}, []);
+
+    const logout  = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      setToken(null);
+    };
+
 
   // Fetch todos from API on mount
   useEffect(() => {
@@ -155,162 +169,17 @@ function App() {
   if (loading) return <div><p>Loading...</p></div>;
 
   return (
-    <div>
-      <h1>Todo App</h1>
-
-      {error && (
-        <div
-          style={{
-            padding: "1rem",
-            marginBottom: "1rem",
-            backgroundColor: "#ffe6e6",
-            color: "#cc0000",
-            borderRadius: "4px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}
-        >
-          <span>{error.message}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{
-              backgroundColor: "transparent",
-              border: "none",
-              color: "#cc0000",
-              fontSize: "1.5rem",
-              cursor: "pointer"
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-      
-      <div>
-     <input
-  type="text"
-  value={input}
-  onChange={handleInputChange}
-  onKeyDown={(e) => e.key === "Enter" && addTodo()}
-  placeholder="Add a new todo..."
-  style={{
-    padding: "0.5rem",
-    fontSize: "1rem",
-    borderRadius: "4px",
-    border: inputError ? "2px solid #cc0000" : "1px solid #ddd"
-  }}
-/>
-
-{inputError && (
-  <p style={{ color: "#cc0000", fontSize: "0.875rem", margin: "0.25rem 0 0 0" }}>
-    {inputError}
-  </p>
-)}
-        
-        <button
-          onClick={addTodo}
-          disabled={isLoading || inputError !== null}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: isLoading || inputError ? "#ccc" : "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            marginLeft: "10px",
-            cursor: isLoading || inputError ? "not-allowed" : "pointer"
-          }}
-        >
-          {isLoading ? "Adding..." : "Add"}
-        </button>
-        
-      </div>
-
-      <div style={{ marginBottom: "1rem" }}>
-        <button
-          onClick={() => setFilter("all")}
-          style={{
-            marginTop: "1rem",
-            padding: "0.5rem 1rem", //BETTER SPACING 
-            marginRight: "0.5rem", // SPACE BETWEEN BUTTONS
-            backgroundColor: filter === "all" ? "#007bff" : "#ddd",
-            color: filter === "all" ? "white" : "black",
-            border: "none",
-            borderRadius: "4px", // rounded corner
-            cursor: "pointer" //cursor pointer on hover 
-          }}
-        >
-          All ({todos.length})
-        </button>
-
-        <button
-          onClick={() => setFilter("active")}
-          style={{
-            padding: "0.5rem 1rem",
-            marginRight: "0.5rem",
-            backgroundColor: filter === "active" ? "#007bff" : "#ddd",
-            color: filter === "active" ? "white" : "black",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Active ({activeCount})
-        </button>
-
-        <button
-          onClick={() => setFilter("done")}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: filter === "done" ? "#007bff" : "#ddd",
-            color: filter === "done" ? "white" : "black",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Done ({doneCount})
-        </button>
-
-        <button
-          onClick={clearCompleted}
-          disabled={doneCount === 0}
-          style={{
-            marginLeft: "0.5rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: doneCount === 0 ? "#ccc" : "#ff4444",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: doneCount === 0 ? "not-allowed" : "pointer"
-          }}
-        >
-          Clear completed
-        </button>
-      </div>
-
-      {filteredTodos.length === 0 ? (
-        <p style={{ color: "#999", fontStyle: "italic" }}>
-          {filter === "all"
-            ? "No todos yet. Add one to get started!"
-            : filter === "active"
-              ? "No active todos. Great job! 🎉"
-              : "No completed todos yet."}
-        </p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {filteredTodos.map(todo => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onToggle={toggleComplete}
-              onDelete={deleteTodo}
-            />
-          ))}
-        </ul>
-      )}
-    </div>
+     <Routes>
+      <Route path= "/login"
+      element = { token ? < Navigate to ="/todos" /> : <LoginPage onLogin={setToken} />}
+    />
+      <Route path= "/todos"
+      element = { token ? <TodoPage token={token} onLogout={logout} /> : <Navigate to ="/login" />}
+    />
+    <Route path="/" element={<Navigate to={token ? "/todos" : "/login"} />} />
+  </Routes>
   );
-}
 
+}
+   
 export default App;
