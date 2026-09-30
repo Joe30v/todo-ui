@@ -16,14 +16,22 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
   const [inputError, setInputError] = useState<string | null>(null);
 
   // Helper function to add Authorization header
-  const fetchWithAuth = (url: string, options: RequestInit = {}) => {
-    return fetch(url, {
+  // Reads the token from localStorage on every call (not just on mount), and logs out on any 401
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    const currentToken = localStorage.getItem("token") ?? token;
+    const response = await fetch(url, {
       ...options,
       headers: {
         ...options.headers,
-        "Authorization": `Bearer ${token}`  // ADD TOKEN TO EVERY REQUEST
+        "Authorization": `Bearer ${currentToken}`  // ADD TOKEN TO EVERY REQUEST
       }
     });
+
+    if (response.status === 401) {
+      onLogout();
+    }
+
+    return response;
   };
 
   // Fetch todos on mount
