@@ -50,8 +50,9 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
           throw new Error("Failed to fetch todos");
         }
         
-        const loadedTodos: Todo[] = await response.json();
-        setTodos(loadedTodos);
+       const data = await response.json();
+      setTodos(data.todos);
+
       } catch (err) { // if fail to fetch then  fetch error message
         setError({message: err instanceof Error ? err.message : "Unknown error", type: "fetch"});
       } finally {
