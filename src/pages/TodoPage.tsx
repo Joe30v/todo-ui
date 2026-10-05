@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import  TodoItem, {type Todo } from '../components/TodoItem';
+import { API_URL } from '../api';
 
 interface TodoPageProps {
   token: string;
@@ -39,7 +40,7 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
     async function loadTodos() {
       try {
         setLoading(true);
-        const response = await fetchWithAuth("http://localhost:3000/todos");
+        const response = await fetchWithAuth(`${API_URL}/todos`);
         
         if (!response.ok) {
           if (response.status === 401) {
@@ -83,7 +84,7 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
 
     try {
       setIsLoading(true);
-      const response = await fetchWithAuth("http://localhost:3000/todos", {
+      const response = await fetchWithAuth(`${API_URL}/todos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: input })
@@ -106,7 +107,7 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
   // Toggle todo with token
   async function toggleComplete(todo: Todo) {
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/todos/${todo.id}`, {
+      const response = await fetchWithAuth(`${API_URL}/todos/${todo.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !todo.completed })
@@ -125,7 +126,7 @@ export default function TodoPage({ token, onLogout }: TodoPageProps) {
   // Delete todo with token
   async function deleteTodo(id: number) {
     try {
-      const response = await fetchWithAuth(`http://localhost:3000/todos/${id}`, {
+      const response = await fetchWithAuth(`${API_URL}/todos/${id}`, {
         method: "DELETE"
       });
 

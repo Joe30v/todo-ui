@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../api';
 
 export default function LoginPage({ onLogin }: { onLogin: (token: string) => void }) {
 
@@ -19,7 +20,7 @@ export default function LoginPage({ onLogin }: { onLogin: (token: string) => voi
     const method = "POST";
 
     try {
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
