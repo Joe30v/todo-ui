@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from './api';
 import TodoItem, { type Todo } from './components/TodoItem';
  import  { Navigate, Route, Routes } from 'react-router-dom';
  import TodoPage from './pages/TodoPage';
@@ -47,7 +48,7 @@ function App() {
     async function loadTodos() {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/todos");
+        const response = await fetch(`${API_URL}/todos`);
         if (!response.ok) throw new Error("Failed to fetch todos");
         const loadedTodos: Todo[] = await response.json();
         setTodos(loadedTodos);
@@ -80,7 +81,7 @@ function App() {
     }
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/todos", {
+      const response = await fetch(`${API_URL}/todos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: input })
@@ -105,7 +106,7 @@ function App() {
 
   async function toggleComplete(todo: Todo) {
     try {
-      const response = await fetch(`http://localhost:3000/todos/${todo.id}`, {
+      const response = await fetch(`${API_URL}/todos/${todo.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !todo.completed })
@@ -123,7 +124,7 @@ function App() {
 
   async function deleteTodo(id: number) {
     try {
-      const response = await fetch(`http://localhost:3000/todos/${id}`, {
+      const response = await fetch(`${API_URL}/todos/${id}`, {
         method: "DELETE"
       });
 
@@ -142,7 +143,7 @@ function App() {
 
     try {
       const responses = await Promise.all(
-        completedIds.map(id => fetch(`http://localhost:3000/todos/${id}`, {
+        completedIds.map(id => fetch(`${API_URL}/todos/${id}`, {
           method: "DELETE"
         }))
       );
